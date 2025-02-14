@@ -5,6 +5,7 @@
 # cd e-Paper/RaspberryPi_JetsonNano/python/
 # pip3 install . --break-system-packages
 # pip3 install --break-system-packages -r requirements.txt
+# Credits Icons: https://github.com/erikflowers/weather-icons
 
 import time
 from datetime import datetime
