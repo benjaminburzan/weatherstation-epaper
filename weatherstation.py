@@ -1,6 +1,6 @@
 # HOW TO
 # sudo raspi-config # Gehe zu “Interfacing Options” → “SPI” und aktiviere es.
-# sudo apt install python3-rpi.gpio python3-spidev python3-pip python3-pil python3-numpy git vim python3-rpi-lgpio python3-lgpio python3-aiohttp liblgpio-dev fonts-dejavu python3.11-venv swig build-essential python3-dev
+# sudo apt install python3-rpi.gpio python3-spidev python3-pip python3-pil python3-numpy git vim python3-rpi-lgpio python3-lgpio python3-aiohttp liblgpio-dev fonts-dejavu python3.11-venv swig build-essential python3-dev python3-cairosvg
 # git clone https://github.com/waveshareteam/e-Paper.git
 # cd e-Paper/RaspberryPi_JetsonNano/python/
 # pip3 install . --break-system-packages
@@ -50,9 +50,13 @@ def convert_svg_to_png(svg_path, output_path, size=(50, 50)):
     """Konvertiert eine SVG-Datei in eine PNG-Datei mit bestimmter Größe."""
     cairosvg.svg2png(url=svg_path, write_to=output_path, output_width=size[0], output_height=size[1])
 
+# def get_weather_icon(weather_icon):
+#     """Gibt den passenden Icon-Dateinamen zurück oder ein Standard-Icon."""
+#     return icon_mapping.get(weather_icon, "wi-day-sunny.svg")  # Standard-Icon als Fallback
+
 def get_weather_icon(weather_icon):
-    """Gibt den passenden Icon-Dateinamen zurück oder ein Standard-Icon."""
-    return icon_mapping.get(weather_icon, "wi-day-sunny.svg")  # Standard-Icon als Fallback
+    """Gibt den passenden PNG-Dateinamen zurück oder ein Standard-Icon."""
+    return icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Standard-Icon als Fallback
 
 # Funktion zum Übersetzen des Wettersummaries
 def translate_summary(english_summary):
@@ -141,25 +145,17 @@ def display_weather(epd, temperature, temperature_max, summary, weather_icon):
         # Wetterzusammenfassung im unteren Bereich (60%)
         draw_black.text((padding, temp_height - padding), summary, font=font_summary, fill=0)  # Schwarz
 
-# ===========
+        # ========== Wetter-Icon anzeigen ==========
+        # PNG-Datei statt SVG verwenden
+        icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback-Icon
+        png_icon_path = f"weather-icons/{icon_filename}"
 
-        # Wetter-Icon bestimmen
-        icon_filename = get_weather_icon(weather_icon)
-        svg_icon_path = f"weather-icons/{icon_filename}"
-        png_icon_path = svg_icon_path.replace(".svg", ".png")
-
-        # SVG in PNG konvertieren (falls noch nicht geschehen)
-        convert_svg_to_png(svg_icon_path, png_icon_path)
-
-        # Icon laden und darstellen
-        weather_icon_img = Image.open(png_icon_path).convert("1")  # In Schwarz-Weiß umwandeln
-
-        # Icon skalieren & positionieren
-        icon_size = (50, 50)
-        weather_icon_img = weather_icon_img.resize(icon_size)
-        image_black.paste(weather_icon_img, (epd.width - 60, 10))
-
-# ==========
+        try:
+            weather_icon_img = Image.open(png_icon_path).convert("1")  # In Schwarz-Weiß umwandeln
+            weather_icon_img = weather_icon_img.resize((50, 50))  # Skalieren
+            image_black.paste(weather_icon_img, (epd.width - 60, 10))  # Positionieren
+        except Exception as e:
+            log_message(f"Fehler beim Laden des Icons: {e}")
 
         # Drehe das Bild um 90° im Uhrzeigersinn
         image_black = image_black.rotate(180, expand=True)
