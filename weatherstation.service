@@ -3,8 +3,8 @@ Description=Weather Station
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /root/weatherstation.py
-WorkingDirectory=/root
+ExecStart=/usr/bin/python3 /root/weatherstation-epaper/weatherstation.py
+WorkingDirectory=/root/weatherstation-epaper
 StandardOutput=append:/var/log/weatherstation.log
 StandardError=append:/var/log/weatherstation.log
 Restart=always
