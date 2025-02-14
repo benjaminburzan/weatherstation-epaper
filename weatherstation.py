@@ -124,17 +124,16 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         #summary_height = epd.height - temp_height  # Restliche 60% der Höhe für die Zusammenfassung
 
         PADDING = 10  # Abstand zu den Rändern
-        PADDING_TOP = 15  # Abstand zum oberen Rand
 
         # Falls Temperatur >= Temperatur-Maximum → Temperatur in ROT anzeigen
         if temperature >= temperature_max:
-            draw_red.text((PADDING, PADDING_TOP), f"{temperature}°C", font=font, fill=0)  # ROT
+            draw_red.text((PADDING, PADDING), f"{temperature}°C", font=font, fill=0)  # ROT
         else:
             # Prüfe, ob eine der Zahlen zweistellig ist
             if temperature >= 10 or temperature_max >= 10:
-                draw_black.text((PADDING, PADDING_TOP), f"{temperature}°/{temperature_max}°", font=font, fill=0)  # Schwarz mit "/" ohne Leerzeichen
+                draw_black.text((PADDING, PADDING), f"{temperature}°/{temperature_max}°", font=font, fill=0)  # Schwarz mit "/" ohne Leerzeichen
             else:
-                draw_black.text((PADDING, PADDING_TOP), f"{temperature}° / {temperature_max}°", font=font, fill=0)  # Schwarz mit " / " mit Leerzeichen
+                draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}°", font=font, fill=0)  # Schwarz mit " / " mit Leerzeichen
 
         # Wetterzusammenfassung im unteren Bereich (60%)
         draw_black.text((PADDING, temp_height - PADDING), summary, font=font_summary, fill=0)  # Schwarz
