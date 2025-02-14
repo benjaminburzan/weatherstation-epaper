@@ -12,7 +12,6 @@ import pirateweather
 from waveshare_epd import epd2in13bc
 from PIL import Image, ImageDraw, ImageFont
 import json
-import cairosvg
 
 # JSON mit den Übersetzungen laden
 with open('translation.json', 'r') as file:
@@ -44,19 +43,25 @@ def log_message(message):
     with open(LOG_FILE, "a") as log_file:
         log_file.write(log_entry)
 
-    print(log_entry, end="")  # Optional: Konsolenausgabe
+    print(log_entry)  # Optional: Konsolenausgabe
 
-def convert_svg_to_png(svg_path, output_path, size=(50, 50)):
-    """Konvertiert eine SVG-Datei in eine PNG-Datei mit bestimmter Größe."""
-    cairosvg.svg2png(url=svg_path, write_to=output_path, output_width=size[0], output_height=size[1])
+# def convert_svg_to_png(svg_path, output_path, size=(50, 50)):
+#     """Konvertiert eine SVG-Datei in eine PNG-Datei mit bestimmter Größe."""
+#     cairosvg.svg2png(url=svg_path, write_to=output_path, output_width=size[0], output_height=size[1])
 
 # def get_weather_icon(weather_icon):
 #     """Gibt den passenden Icon-Dateinamen zurück oder ein Standard-Icon."""
 #     return icon_mapping.get(weather_icon, "wi-day-sunny.svg")  # Standard-Icon als Fallback
 
+# def get_weather_icon(weather_icon):
+#     """Gibt den passenden PNG-Dateinamen zurück oder ein Standard-Icon."""
+#     return icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Standard-Icon als Fallback
+
 def get_weather_icon(weather_icon):
     """Gibt den passenden PNG-Dateinamen zurück oder ein Standard-Icon."""
-    return icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Standard-Icon als Fallback
+    #return icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Standard-Icon als Fallback
+    icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback-Icon
+    return f"weather-icons/{icon_filename}"
 
 # Funktion zum Übersetzen des Wettersummaries
 def translate_summary(english_summary):
@@ -109,7 +114,7 @@ def get_weather():
         return None, None, "Fehler: Keine Daten"
 
 # Wetter auf dem e-Paper Display anzeigen
-def display_weather(epd, temperature, temperature_max, summary, weather_icon):
+def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
     """Zeigt das Wetter auf dem e-Paper Display an."""
     log_message("Zeige Wetter auf e-Paper Display...")
 
@@ -147,8 +152,10 @@ def display_weather(epd, temperature, temperature_max, summary, weather_icon):
 
         # ========== Wetter-Icon anzeigen ==========
         # PNG-Datei statt SVG verwenden
-        icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback-Icon
-        png_icon_path = f"weather-icons/{icon_filename}"
+        # icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback-Icon
+        # png_icon_path = f"weather-icons/{icon_filename}"
+
+        log_message(f"png_icon_path {png_icon_path}")
 
         try:
             weather_icon_img = Image.open(png_icon_path).convert("1")  # In Schwarz-Weiß umwandeln
@@ -178,16 +185,17 @@ def main():
     while True:
         # Holen der Wetterdaten und zurückgeben der Variablen
         temperature, temperature_max, summary, weather_icon = get_weather()
+        png_icon_path = get_weather_icon(weather_icon)
 
         # Translate daily weather summary into German
         translated_summary = translate_summary(summary)
 
-        log_message(f"Wetterdaten: {temperature}°C / {temperature_max}°C, {translated_summary}")
+        log_message(f"Wetterdaten: {temperature}° / {temperature_max}°, {translated_summary} Wetter-Icon: {png_icon_path}")
 
         if temperature is not None and temperature_max is not None:
             # Anzeige nur aktualisieren, wenn die Daten sich geändert haben
             if should_update_display(temperature, temperature_max, translated_summary):
-                display_weather(epd, temperature, temperature_max, translated_summary, weather_icon)
+                display_weather(epd, temperature, temperature_max, translated_summary, png_icon_path)
             else:
                 log_message("Keine Änderung der Wetterdaten, Anzeige nicht aktualisiert.")
         else:
