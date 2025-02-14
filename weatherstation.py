@@ -117,7 +117,7 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         # Schriftart laden
         font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
         font = ImageFont.truetype(font_path, 32)  # Größere Schrift für Temperatur
-        font_summary = ImageFont.truetype(font_path, 16)  # Kleinere Schrift für die Zusammenfassung
+        font_summary = ImageFont.truetype(font_path, 18)  # Kleinere Schrift für die Zusammenfassung
 
         # Berechne die Höhe und Position des Textes
         temp_height = int(epd.height * 0.4)  # 40% der Höhe für Temperaturdaten
