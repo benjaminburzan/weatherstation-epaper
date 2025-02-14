@@ -128,7 +128,11 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         if temperature >= temperature_max:
             draw_red.text((PADDING, PADDING), f"{temperature}°C", font=font, fill=0)  # ROT
         else:
-            draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}°", font=font, fill=0)  # Schwarz
+            # Prüfe, ob eine der Zahlen zweistellig ist
+            if temperature >= 10 or temperature_max >= 10:
+                draw_black.text((PADDING, PADDING), f"{temperature}°/{temperature_max}°", font=font, fill=0)  # Schwarz mit "/" ohne Leerzeichen
+            else:
+                draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}°", font=font, fill=0)  # Schwarz mit " / " mit Leerzeichen
 
         # Wetterzusammenfassung im unteren Bereich (60%)
         draw_black.text((PADDING, temp_height - PADDING), summary, font=font_summary, fill=0)  # Schwarz
