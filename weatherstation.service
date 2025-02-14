@@ -10,6 +10,7 @@ StandardError=append:/var/log/weatherstation.log
 Restart=always
 User=root
 Type=idle # start when all other services have been started
+ExecStartPre=/bin/sleep 5
 
 [Install]
 WantedBy=multi-user.target
