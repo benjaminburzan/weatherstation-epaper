@@ -1,14 +1,14 @@
 {
-  "clear-day": "wi-day-sunny.svg",
-  "clear-night": "wi-day-sunny.svg",
-  "rain": "wi-rain.svg",
-  "snow": "wi-snow-wind.svg",
-  "sleet": "wi-sleet.svg",
-  "wind": "wi-strong-wind.svg",
-  "fog": "wi-fog.svg",
-  "cloudy": "wi-cloudy.svg",
-  "partly-cloudy-day": "wi-day-cloudy.svg",
-  "partly-cloudy-night": "wi-day-cloudy.svg",
-  "thunderstorm": "wi-thunderstorm.svg",
-  "hail": "wi-hail.svg"
+  "clear-day": "wi-day-sunny.png",
+  "clear-night": "wi-day-sunny.png",
+  "rain": "wi-rain.png",
+  "snow": "wi-snow-wind.png",
+  "sleet": "wi-sleet.png",
+  "wind": "wi-strong-wind.png",
+  "fog": "wi-fog.png",
+  "cloudy": "wi-cloudy.png",
+  "partly-cloudy-day": "wi-day-cloudy.png",
+  "partly-cloudy-night": "wi-day-cloudy.png",
+  "thunderstorm": "wi-thunderstorm.png",
+  "hail": "wi-hail.png"
 }
