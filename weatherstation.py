@@ -25,10 +25,7 @@ LOG_FILE = "/var/log/weatherstation.log"
 API_KEY = os.environ.get("PIRATE_WEATHER_API_KEY")
 LATITUDE = float(os.environ.get("LATITUDE", "52.5200"))
 LONGITUDE = float(os.environ.get("LONGITUDE", "13.4050"))
-
-# Load translations from JSON
-with open('translation.json', 'r') as file:
-    translations = json.load(file)
+LANGUAGE = os.environ.get("LANGUAGE", "de")
 
 # Load icon mapping from file
 with open("icons.json", "r") as file:
@@ -51,10 +48,6 @@ def get_weather_icon(weather_icon):
     icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback icon
     return f"weather-icons/{icon_filename}"
 
-
-def translate_summary(english_summary):
-    """Translates the weather summary from English to German."""
-    return translations.get(english_summary, english_summary)  # Fallback to English if no translation available
 
 class WeatherStation:
     """Encapsulates weather station state and operations."""
@@ -85,15 +78,13 @@ class WeatherStation:
             temperature, temperature_max, summary, weather_icon = get_weather()
             png_icon_path = get_weather_icon(weather_icon)
 
-            # Translate daily weather summary into German
-            translated_summary = translate_summary(summary)
-
-            log_message(f"Weather data: {temperature}° / {temperature_max}°, {translated_summary} Icon: {png_icon_path}")
+            # Summary is already translated by the API via lang parameter
+            log_message(f"Weather data: {temperature}° / {temperature_max}°, {summary} Icon: {png_icon_path}")
 
             if temperature is not None and temperature_max is not None:
                 # Only update display if data has changed
-                if self.should_update_display(temperature, temperature_max, translated_summary):
-                    display_weather(self.epd, temperature, temperature_max, translated_summary, png_icon_path)
+                if self.should_update_display(temperature, temperature_max, summary):
+                    display_weather(self.epd, temperature, temperature_max, summary, png_icon_path)
                 else:
                     log_message("No change in weather data, display not updated.")
             else:
@@ -115,7 +106,7 @@ def get_weather():
     log_message("Fetching weather data...")
 
     try:
-        forecast = pirateweather.load_forecast(API_KEY, LATITUDE, LONGITUDE, lang="de", units="si")
+        forecast = pirateweather.load_forecast(API_KEY, LATITUDE, LONGITUDE, lang=LANGUAGE, units="si")
         temperature = round(forecast.currently().temperature) if forecast.currently().temperature is not None else 0  # Round temperature
 
         temperature_max = round(forecast.daily().data[0].temperatureMax) if forecast.daily().data[0].temperatureMax is not None else 0  # Round max temperature
