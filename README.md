@@ -84,6 +84,7 @@ Get your free API key from [Pirate Weather](https://pirate-weather.apiable.io/pr
 | `PIRATE_WEATHER_API_KEY` | Your Pirate Weather API key | Required |
 | `LATITUDE` | Location latitude | 52.5200 (Berlin) |
 | `LONGITUDE` | Location longitude | 13.4050 (Berlin) |
+| `LANGUAGE` | Weather summary language ([supported languages](https://pirateweather.net/en/latest/API/#language)) | de |
 | `UNITS` | Temperature units ("si" for Celsius, "us" for Fahrenheit) | si |
 
 ## Usage
