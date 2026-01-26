@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 # Display configuration
 FONT_SIZE_TEMPERATURE = 32
 FONT_SIZE_SUMMARY = 18
+MIN_FONT_SIZE_SUMMARY = 10
 ICON_SIZE = 40
 PADDING = 10
 
@@ -121,6 +122,16 @@ def get_weather():
         return None, None, "Error: No data", None
 
 
+def get_fitting_font_size(text, max_width, font_path, max_size, min_size=MIN_FONT_SIZE_SUMMARY):
+    """Returns a font size that fits the text within max_width."""
+    for size in range(max_size, min_size - 1, -1):
+        font = ImageFont.truetype(font_path, size)
+        text_width = font.getlength(text)
+        if text_width <= max_width:
+            return size
+    return min_size
+
+
 def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
     """Displays the weather on the e-Paper display."""
     log_message("Displaying weather on e-Paper display...")
@@ -139,7 +150,9 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
 
         # Load fonts
         font = ImageFont.truetype(FONT_PATH, FONT_SIZE_TEMPERATURE)
-        font_summary = ImageFont.truetype(FONT_PATH, FONT_SIZE_SUMMARY)
+        available_width = epd.height - (2 * PADDING)  # epd.height is width in landscape
+        summary_font_size = get_fitting_font_size(summary, available_width, FONT_PATH, FONT_SIZE_SUMMARY)
+        font_summary = ImageFont.truetype(FONT_PATH, summary_font_size)
 
         # Calculate text height and position (40% for temperature data)
         temp_height = int(epd.height * 0.4)
