@@ -175,8 +175,8 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
             log_message(f"Fehler beim Laden des Icons: {e}")
 
         # Drehe das Bild um 90° im Uhrzeigersinn
-        image_black = image_black.rotate(180, expand=True)
-        image_red = image_red.rotate(180, expand=True)
+        image_black = image_black.rotate(90, expand=True)
+        image_red = image_red.rotate(90, expand=True)
 
         # Bilder an das Display senden
         epd.display(epd.getbuffer(image_black), epd.getbuffer(image_red))
