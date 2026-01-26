@@ -4,11 +4,7 @@ import time
 from datetime import datetime
 import json
 
-from dotenv import load_dotenv
 import pirateweather
-
-# Load environment variables from .env file
-load_dotenv()
 from waveshare_epd import epd2in13bc
 from PIL import Image, ImageDraw, ImageFont
 
