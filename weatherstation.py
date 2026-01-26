@@ -21,40 +21,40 @@ UPDATE_INTERVAL_SECONDS = 1800  # 30 minutes
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 LOG_FILE = "/var/log/weatherstation.log"
 
-# Pirate Weather API-Konfiguration (from environment)
+# Pirate Weather API configuration (from environment)
 API_KEY = os.environ.get("PIRATE_WEATHER_API_KEY")
 LATITUDE = float(os.environ.get("LATITUDE", "52.5200"))
 LONGITUDE = float(os.environ.get("LONGITUDE", "13.4050"))
 
-# JSON mit den Übersetzungen laden
+# Load translations from JSON
 with open('translation.json', 'r') as file:
     translations = json.load(file)
 
-# Icons aus Datei laden
+# Load icon mapping from file
 with open("icons.json", "r") as file:
     icon_mapping = json.load(file)
 
-# Funktion zum Logging mit Timestamp
+
 def log_message(message):
-    """Schreibt eine Nachricht mit Timestamp in die Log-Datei."""
+    """Writes a message with timestamp to the log file."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_entry = f"[{timestamp}] {message}\n"
 
     with open(LOG_FILE, "a") as log_file:
         log_file.write(log_entry)
 
-    print(f"[{timestamp}] {message}")  # Optional: Konsolenausgabe
+    print(f"[{timestamp}] {message}")
+
 
 def get_weather_icon(weather_icon):
-    """Gibt den passenden PNG-Dateinamen zurück oder ein Standard-Icon."""
-    #return icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Standard-Icon als Fallback
-    icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback-Icon
+    """Returns the matching PNG filename or a default icon."""
+    icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback icon
     return f"weather-icons/{icon_filename}"
 
-# Funktion zum Übersetzen des Wettersummaries
+
 def translate_summary(english_summary):
-    """Übersetzt die Wetterzusammenfassung von Englisch nach Deutsch."""
-    return translations.get(english_summary, english_summary)  # Rückfall auf den englischen Text, wenn keine Übersetzung vorhanden ist.
+    """Translates the weather summary from English to German."""
+    return translations.get(english_summary, english_summary)  # Fallback to English if no translation available
 
 class WeatherStation:
     """Encapsulates weather station state and operations."""
@@ -78,116 +78,113 @@ class WeatherStation:
 
     def run(self):
         """Main loop."""
-        log_message("Weather Station gestartet.")
+        log_message("Weather Station started.")
 
         while True:
-            # Holen der Wetterdaten und zurückgeben der Variablen
+            # Fetch weather data
             temperature, temperature_max, summary, weather_icon = get_weather()
             png_icon_path = get_weather_icon(weather_icon)
 
             # Translate daily weather summary into German
             translated_summary = translate_summary(summary)
 
-            log_message(f"Wetterdaten: {temperature}° / {temperature_max}°, {translated_summary} Wetter-Icon: {png_icon_path}")
+            log_message(f"Weather data: {temperature}° / {temperature_max}°, {translated_summary} Icon: {png_icon_path}")
 
             if temperature is not None and temperature_max is not None:
-                # Anzeige nur aktualisieren, wenn die Daten sich geändert haben
+                # Only update display if data has changed
                 if self.should_update_display(temperature, temperature_max, translated_summary):
                     display_weather(self.epd, temperature, temperature_max, translated_summary, png_icon_path)
                 else:
-                    log_message("Keine Änderung der Wetterdaten, Anzeige nicht aktualisiert.")
+                    log_message("No change in weather data, display not updated.")
             else:
-                log_message("Fehler bei der Wetterdatenanzeige.")
+                log_message("Error displaying weather data.")
 
-            log_message(f"Warte {UPDATE_INTERVAL_SECONDS // 60} Minuten bis zur nächsten Aktualisierung...")
+            log_message(f"Waiting {UPDATE_INTERVAL_SECONDS // 60} minutes until next update...")
             time.sleep(UPDATE_INTERVAL_SECONDS)
             clear_display_and_sleep(self.epd)
 
 
-# Funktion zum Löschen des Displays und Versetzen in den Ruhezustand
 def clear_display_and_sleep(epd):
-    """Löscht das Display und versetzt es in den Ruhezustand."""
+    """Clears the display and puts it into sleep mode."""
     epd.Clear()
     epd.sleep()
 
-# Wetterdaten abrufen
+
 def get_weather():
-    """Holt Wetterdaten von Pirate Weather und gibt sie formatiert zurück."""
-    log_message("Wetterdaten abrufen...")
+    """Fetches weather data from Pirate Weather and returns it formatted."""
+    log_message("Fetching weather data...")
 
     try:
         forecast = pirateweather.load_forecast(API_KEY, LATITUDE, LONGITUDE, lang="de", units="si")
-        temperature = round(forecast.currently().temperature) if forecast.currently().temperature is not None else 0 # Temperatur runden
+        temperature = round(forecast.currently().temperature) if forecast.currently().temperature is not None else 0  # Round temperature
 
-        temperature_max = round(forecast.daily().data[0].temperatureMax) if forecast.daily().data[0].temperatureMax is not None else 0  # Max Temperatur runden
+        temperature_max = round(forecast.daily().data[0].temperatureMax) if forecast.daily().data[0].temperatureMax is not None else 0  # Round max temperature
         summary = forecast.daily().data[0].summary
         icon = forecast.daily().data[0].icon
 
-        # Rückgabe der Temperaturen und Zusammenfassung
         return temperature, temperature_max, summary, icon
     except (pirateweather.PirateWeatherError, ConnectionError, TimeoutError) as e:
-        log_message(f"Fehler beim Abrufen der Wetterdaten: {e}")
-        return None, None, "Fehler: Keine Daten", None
+        log_message(f"Error fetching weather data: {e}")
+        return None, None, "Error: No data", None
 
-# Wetter auf dem e-Paper Display anzeigen
+
 def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
-    """Zeigt das Wetter auf dem e-Paper Display an."""
-    log_message("Zeige Wetter auf e-Paper Display...")
+    """Displays the weather on the e-Paper display."""
+    log_message("Displaying weather on e-Paper display...")
 
     try:
         epd.init()
         epd.Clear()
 
-        # Erstellt ein leeres Bild (schwarz-weiß)
-        image_black = Image.new("1", (epd.height, epd.width), 255)  # Weiß (Querformat)
+        # Create empty black/white image (landscape orientation)
+        image_black = Image.new("1", (epd.height, epd.width), 255)  # White
         draw_black = ImageDraw.Draw(image_black)
 
-        # Erstellt ein leeres Bild für rote Elemente (bei diesem Design genutzt)
-        image_red = Image.new("1", (epd.height, epd.width), 255)  # Weiß
+        # Create empty image for red elements
+        image_red = Image.new("1", (epd.height, epd.width), 255)  # White
         draw_red = ImageDraw.Draw(image_red)
 
-        # Schriftart laden
+        # Load fonts
         font = ImageFont.truetype(FONT_PATH, FONT_SIZE_TEMPERATURE)
         font_summary = ImageFont.truetype(FONT_PATH, FONT_SIZE_SUMMARY)
 
-        # Berechne die Höhe und Position des Textes
-        temp_height = int(epd.height * 0.4)  # 40% der Höhe für Temperaturdaten
+        # Calculate text height and position (40% for temperature data)
+        temp_height = int(epd.height * 0.4)
 
-        # Falls Temperatur >= Temperatur-Maximum → Temperatur in ROT anzeigen
+        # If temperature >= max temperature, display in RED
         if temperature >= temperature_max:
-            draw_red.text((PADDING, PADDING), f"{temperature}°C", font=font, fill=0)  # ROT
+            draw_red.text((PADDING, PADDING), f"{temperature}°C", font=font, fill=0)  # Red
         else:
-            # Prüfe, ob eine der Zahlen zweistellig ist
+            # Check if either number is double-digit
             if temperature >= 10 or temperature_max >= 10:
-                draw_black.text((PADDING, PADDING), f"{temperature}°/{temperature_max}°", font=font, fill=0)  # Schwarz mit "/" ohne Leerzeichen
+                draw_black.text((PADDING, PADDING), f"{temperature}°/{temperature_max}°", font=font, fill=0)  # Black with "/" no spaces
             else:
-                draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}°", font=font, fill=0)  # Schwarz mit " / " mit Leerzeichen
+                draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}°", font=font, fill=0)  # Black with " / " with spaces
 
-        # Wetterzusammenfassung im unteren Bereich (60%)
-        draw_black.text((PADDING, temp_height - PADDING), summary, font=font_summary, fill=0)  # Schwarz
+        # Weather summary in lower area
+        draw_black.text((PADDING, temp_height - PADDING), summary, font=font_summary, fill=0)  # Black
 
-        # Wetter-Icon anzeigen
+        # Display weather icon
         try:
-            weather_icon_img = Image.open(png_icon_path).convert("1")  # In Schwarz-Weiß umwandeln
-            weather_icon_img = weather_icon_img.resize((ICON_SIZE, ICON_SIZE))  # Skalieren
-            image_black.paste(weather_icon_img, (epd.height - PADDING - weather_icon_img.width, PADDING))  # Positionieren // height because screen gehts rotated by 90 degress
+            weather_icon_img = Image.open(png_icon_path).convert("1")  # Convert to black/white
+            weather_icon_img = weather_icon_img.resize((ICON_SIZE, ICON_SIZE))  # Scale
+            image_black.paste(weather_icon_img, (epd.height - PADDING - weather_icon_img.width, PADDING))  # Position (height because screen is rotated 90 degrees)
         except (FileNotFoundError, IOError, OSError) as e:
-            log_message(f"Fehler beim Laden des Icons: {e}")
+            log_message(f"Error loading icon: {e}")
 
-        # Drehe das Bild um 90° im Uhrzeigersinn
+        # Rotate image 90° clockwise
         image_black = image_black.rotate(90, expand=True)
         image_red = image_red.rotate(90, expand=True)
 
-        # Bilder an das Display senden
+        # Send images to display
         epd.display(epd.getbuffer(image_black), epd.getbuffer(image_red))
 
-        log_message("Anzeige erfolgreich aktualisiert.")
+        log_message("Display updated successfully.")
         epd.sleep()
     except Exception as e:
-        log_message(f"Fehler bei der Display-Anzeige: {type(e).__name__}: {e}")
+        log_message(f"Error in display: {type(e).__name__}: {e}")
         epd.sleep()
 
-# Hauptfunktion
 def main():
     if not API_KEY:
         log_message("ERROR: PIRATE_WEATHER_API_KEY environment variable not set")
