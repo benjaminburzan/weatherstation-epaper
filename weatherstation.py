@@ -1,18 +1,30 @@
-# HOW TO
-# sudo raspi-config # Gehe zu “Interfacing Options” → “SPI” und aktiviere es.
-# sudo apt install python3-rpi.gpio python3-spidev python3-pip python3-pil python3-numpy git vim python3-rpi-lgpio python3-lgpio python3-aiohttp liblgpio-dev fonts-dejavu python3.11-venv swig build-essential python3-dev python3-cairosvg
-# git clone https://github.com/waveshareteam/e-Paper.git
-# cd e-Paper/RaspberryPi_JetsonNano/python/
-# pip3 install . --break-system-packages
-# pip3 install --break-system-packages -r requirements.txt
-# Credits Icons: https://github.com/erikflowers/weather-icons
-
+import os
+import sys
 import time
 from datetime import datetime
+import json
+
 import pirateweather
 from waveshare_epd import epd2in13bc
 from PIL import Image, ImageDraw, ImageFont
-import json
+
+# Display configuration
+FONT_SIZE_TEMPERATURE = 32
+FONT_SIZE_SUMMARY = 18
+ICON_SIZE = 40
+PADDING = 10
+
+# Timing
+UPDATE_INTERVAL_SECONDS = 1800  # 30 minutes
+
+# Paths
+FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+LOG_FILE = "/var/log/weatherstation.log"
+
+# Pirate Weather API-Konfiguration (from environment)
+API_KEY = os.environ.get("PIRATE_WEATHER_API_KEY")
+LATITUDE = float(os.environ.get("LATITUDE", "52.5200"))
+LONGITUDE = float(os.environ.get("LONGITUDE", "13.4050"))
 
 # JSON mit den Übersetzungen laden
 with open('translation.json', 'r') as file:
@@ -21,19 +33,6 @@ with open('translation.json', 'r') as file:
 # Icons aus Datei laden
 with open("icons.json", "r") as file:
     icon_mapping = json.load(file)
-
-# Pirate Weather API-Konfiguration
-API_KEY = "moqBQ2WXFEE92AE3gbieHeBjO3wRFqVc"
-LATITUDE = 52.5200  # Berlin
-LONGITUDE = 13.4050
-
-# Log-Dateipfad
-LOG_FILE = "/var/log/weatherstation.log"
-
-# Globale Variablen, um die letzten Temperaturdaten zu speichern
-last_temperature = None
-last_temperature_max = None
-last_summary = None
 
 # Funktion zum Logging mit Timestamp
 def log_message(message):
@@ -57,20 +56,53 @@ def translate_summary(english_summary):
     """Übersetzt die Wetterzusammenfassung von Englisch nach Deutsch."""
     return translations.get(english_summary, english_summary)  # Rückfall auf den englischen Text, wenn keine Übersetzung vorhanden ist.
 
-# Funktion zum Überprüfen, ob sich die Wetterdaten geändert haben
-def should_update_display(temperature, temperature_max, summary):
-    """Überprüft, ob sich die Wetterdaten geändert haben."""
-    global last_temperature, last_temperature_max, last_summary
+class WeatherStation:
+    """Encapsulates weather station state and operations."""
 
-    if (temperature != last_temperature or
-        temperature_max != last_temperature_max or
-        summary != last_summary):
-        # Daten haben sich geändert
-        last_temperature = temperature
-        last_temperature_max = temperature_max
-        last_summary = summary
-        return True
-    return False
+    def __init__(self):
+        self.last_temperature = None
+        self.last_temperature_max = None
+        self.last_summary = None
+        self.epd = epd2in13bc.EPD()
+
+    def should_update_display(self, temperature, temperature_max, summary):
+        """Check if weather data has changed."""
+        if (temperature != self.last_temperature or
+            temperature_max != self.last_temperature_max or
+            summary != self.last_summary):
+            self.last_temperature = temperature
+            self.last_temperature_max = temperature_max
+            self.last_summary = summary
+            return True
+        return False
+
+    def run(self):
+        """Main loop."""
+        log_message("Weather Station gestartet.")
+
+        while True:
+            # Holen der Wetterdaten und zurückgeben der Variablen
+            temperature, temperature_max, summary, weather_icon = get_weather()
+            png_icon_path = get_weather_icon(weather_icon)
+
+            # Translate daily weather summary into German
+            translated_summary = translate_summary(summary)
+
+            log_message(f"Wetterdaten: {temperature}° / {temperature_max}°, {translated_summary} Wetter-Icon: {png_icon_path}")
+
+            if temperature is not None and temperature_max is not None:
+                # Anzeige nur aktualisieren, wenn die Daten sich geändert haben
+                if self.should_update_display(temperature, temperature_max, translated_summary):
+                    display_weather(self.epd, temperature, temperature_max, translated_summary, png_icon_path)
+                else:
+                    log_message("Keine Änderung der Wetterdaten, Anzeige nicht aktualisiert.")
+            else:
+                log_message("Fehler bei der Wetterdatenanzeige.")
+
+            log_message(f"Warte {UPDATE_INTERVAL_SECONDS // 60} Minuten bis zur nächsten Aktualisierung...")
+            time.sleep(UPDATE_INTERVAL_SECONDS)
+            clear_display_and_sleep(self.epd)
+
 
 # Funktion zum Löschen des Displays und Versetzen in den Ruhezustand
 def clear_display_and_sleep(epd):
@@ -93,9 +125,9 @@ def get_weather():
 
         # Rückgabe der Temperaturen und Zusammenfassung
         return temperature, temperature_max, summary, icon
-    except Exception as e:
+    except (pirateweather.PirateWeatherError, ConnectionError, TimeoutError) as e:
         log_message(f"Fehler beim Abrufen der Wetterdaten: {e}")
-        return None, None, "Fehler: Keine Daten"
+        return None, None, "Fehler: Keine Daten", None
 
 # Wetter auf dem e-Paper Display anzeigen
 def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
@@ -115,15 +147,11 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         draw_red = ImageDraw.Draw(image_red)
 
         # Schriftart laden
-        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-        font = ImageFont.truetype(font_path, 32)  # Größere Schrift für Temperatur
-        font_summary = ImageFont.truetype(font_path, 18)  # Kleinere Schrift für die Zusammenfassung
+        font = ImageFont.truetype(FONT_PATH, FONT_SIZE_TEMPERATURE)
+        font_summary = ImageFont.truetype(FONT_PATH, FONT_SIZE_SUMMARY)
 
         # Berechne die Höhe und Position des Textes
         temp_height = int(epd.height * 0.4)  # 40% der Höhe für Temperaturdaten
-        #summary_height = epd.height - temp_height  # Restliche 60% der Höhe für die Zusammenfassung
-
-        PADDING = 10  # Abstand zu den Rändern
 
         # Falls Temperatur >= Temperatur-Maximum → Temperatur in ROT anzeigen
         if temperature >= temperature_max:
@@ -140,11 +168,10 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
 
         # Wetter-Icon anzeigen
         try:
-            ICON_SIZE = 40
             weather_icon_img = Image.open(png_icon_path).convert("1")  # In Schwarz-Weiß umwandeln
             weather_icon_img = weather_icon_img.resize((ICON_SIZE, ICON_SIZE))  # Skalieren
             image_black.paste(weather_icon_img, (epd.height - PADDING - weather_icon_img.width, PADDING))  # Positionieren // height because screen gehts rotated by 90 degress
-        except Exception as e:
+        except (FileNotFoundError, IOError, OSError) as e:
             log_message(f"Fehler beim Laden des Icons: {e}")
 
         # Drehe das Bild um 90° im Uhrzeigersinn
@@ -157,36 +184,18 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         log_message("Anzeige erfolgreich aktualisiert.")
         epd.sleep()
     except Exception as e:
-        log_message(f"Fehler bei der Display-Anzeige: {e}")
+        log_message(f"Fehler bei der Display-Anzeige: {type(e).__name__}: {e}")
         epd.sleep()
 
 # Hauptfunktion
 def main():
-    log_message("Weather Station gestartet.")
-    epd = epd2in13bc.EPD()
+    if not API_KEY:
+        log_message("ERROR: PIRATE_WEATHER_API_KEY environment variable not set")
+        sys.exit(1)
 
-    while True:
-        # Holen der Wetterdaten und zurückgeben der Variablen
-        temperature, temperature_max, summary, weather_icon = get_weather()
-        png_icon_path = get_weather_icon(weather_icon)
+    station = WeatherStation()
+    station.run()
 
-        # Translate daily weather summary into German
-        translated_summary = translate_summary(summary)
-
-        log_message(f"Wetterdaten: {temperature}° / {temperature_max}°, {translated_summary} Wetter-Icon: {png_icon_path}")
-
-        if temperature is not None and temperature_max is not None:
-            # Anzeige nur aktualisieren, wenn die Daten sich geändert haben
-            if should_update_display(temperature, temperature_max, translated_summary):
-                display_weather(epd, temperature, temperature_max, translated_summary, png_icon_path)
-            else:
-                log_message("Keine Änderung der Wetterdaten, Anzeige nicht aktualisiert.")
-        else:
-            log_message("Fehler bei der Wetterdatenanzeige.")
-
-        log_message("Warte 30 Minuten bis zur nächsten Aktualisierung...")
-        time.sleep(1800)  # 30 Minuten warten
-        clear_display_and_sleep(epd)  # Versetze das Display in den Ruhezustand
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@ Description=Weather Station
 After=network.target
 
 [Service]
+EnvironmentFile=/root/weatherstation-epaper/.env
 ExecStart=/usr/bin/python3 /root/weatherstation-epaper/weatherstation.py
 WorkingDirectory=/root/weatherstation-epaper
 StandardOutput=append:/var/log/weatherstation.log
