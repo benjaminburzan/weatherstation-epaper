@@ -38,19 +38,10 @@ sudo raspi-config
 ### 2. Install System Dependencies
 
 ```bash
-sudo apt install python3-rpi.gpio python3-spidev python3-pip python3-pil \
-    python3-numpy git python3-rpi-lgpio python3-lgpio python3-aiohttp \
-    liblgpio-dev fonts-dejavu python3.11-venv swig build-essential \
-    python3-dev python3-cairosvg
+sudo apt install python3-pip python3-venv git fonts-dejavu
 ```
 
-### 3. Install Waveshare e-Paper Library
-
-```bash
-pip3 install "git+https://github.com/waveshareteam/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python" --break-system-packages
-```
-
-### 4. Clone and Setup Weather Station
+### 3. Clone and Setup Weather Station
 
 ```bash
 cd ~
@@ -59,9 +50,10 @@ cd weatherstation-epaper
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install "git+https://github.com/waveshareteam/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python"
 ```
 
-### 5. Configure Environment Variables
+### 4. Configure Environment Variables
 
 ```bash
 cp .env.example .env
