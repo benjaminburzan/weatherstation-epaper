@@ -1,0 +1,14 @@
+[MASTER]
+# Ignore import errors for hardware-specific modules that won't be available in CI
+ignored-modules=waveshare_epd,waveshare_epd.epd2in13bc,spidev,lgpio,gpiozero,RPi,RPi.GPIO
+
+[MESSAGES CONTROL]
+# Disable some checks that are too strict for this project
+disable=
+    missing-module-docstring,
+    missing-function-docstring,
+    line-too-long,
+    broad-exception-caught
+
+[FORMAT]
+max-line-length=127
