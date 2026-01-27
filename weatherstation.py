@@ -174,8 +174,8 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         font_summary = ImageFont.truetype(FONT_PATH, FONT_SIZE_SUMMARY)
         available_width = epd.height - (2 * PADDING)  # epd.height is width in landscape
 
-        # Calculate text position (45% of height for temperature area)
-        temp_height = int(epd.width * 0.45)
+        # Calculate text position (60% of height for temperature area)
+        temp_height = int(epd.width * 0.60)
 
         # If temperature >= max temperature, display in RED
         if temperature >= temperature_max:
