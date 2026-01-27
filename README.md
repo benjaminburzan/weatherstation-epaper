@@ -22,6 +22,7 @@ A Raspberry Pi weather station with a Waveshare 2.13" tri-color e-Paper display.
 
 ### Software
 - Free [Pirate Weather API key](https://pirate-weather.apiable.io/products/weather-data/plans)
+- Raspberry Pi OS or Debian-based Linux distro
 
 ---
 
