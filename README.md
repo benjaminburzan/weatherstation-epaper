@@ -67,23 +67,15 @@ cp .env.example .env
 nano .env
 ```
 
-Edit `.env` with your settings:
-
-```
-PIRATE_WEATHER_API_KEY=your_api_key_here
-LATITUDE=52.5200
-LONGITUDE=13.4050
-LANGUAGE=en
-UNITS=si
-```
+At minimum, set your `PIRATE_WEATHER_API_KEY`. See [Configuration](#configuration) for all available options.
 
 ---
 
 ## Configuration
 
-### Environment Variables
+All settings are configured via environment variables in your `.env` file.
 
-Set these in your `.env` file:
+### API Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -92,6 +84,30 @@ Set these in your `.env` file:
 | `LONGITUDE` | Your location's longitude | 13.4050 (Berlin) |
 | `LANGUAGE` | Weather summary language ([see options](https://pirateweather.net/en/latest/API/#language)) | de |
 | `UNITS` | `si` for Celsius, `us` for Fahrenheit | si |
+
+### Display Settings
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `FLIP_DISPLAY` | Set to `true` to rotate display 180° | false |
+| `FONT_SIZE_TEMPERATURE` | Temperature text size (pixels) | 32 |
+| `FONT_SIZE_SUMMARY` | Weather summary text size (max) | 18 |
+| `MIN_FONT_SIZE_SUMMARY` | Minimum summary size (auto-shrinks for long text) | 10 |
+| `ICON_SIZE` | Weather icon size (pixels) | 40 |
+| `PADDING` | Screen edge padding (pixels) | 10 |
+
+### Timing
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `UPDATE_INTERVAL_SECONDS` | How often to refresh (1800 = 30 min) | 1800 |
+
+### Paths
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `FONT_PATH` | TrueType font file | `/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf` |
+| `LOG_FILE` | Log file location | `/var/log/weatherstation.log` |
 
 ---
 
@@ -125,35 +141,6 @@ sudo systemctl status weatherstation
 ```bash
 tail -f /var/log/weatherstation.log
 ```
-
----
-
-## Advanced Configuration
-
-These settings are in `weatherstation.py`. Edit the file directly to customize:
-
-### Display Settings
-
-| Constant | Default | Description |
-|----------|---------|-------------|
-| `FONT_SIZE_TEMPERATURE` | 32 | Temperature text size (pixels) |
-| `FONT_SIZE_SUMMARY` | 18 | Weather summary text size (max) |
-| `MIN_FONT_SIZE_SUMMARY` | 10 | Minimum summary size (auto-shrinks for long text) |
-| `ICON_SIZE` | 40 | Weather icon size (pixels) |
-| `PADDING` | 10 | Screen edge padding (pixels) |
-
-### Timing
-
-| Constant | Default | Description |
-|----------|---------|-------------|
-| `UPDATE_INTERVAL_SECONDS` | 1800 | How often to refresh (1800 = 30 min) |
-
-### Paths
-
-| Constant | Default | Description |
-|----------|---------|-------------|
-| `FONT_PATH` | `/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf` | TrueType font file |
-| `LOG_FILE` | `/var/log/weatherstation.log` | Log file location |
 
 ---
 

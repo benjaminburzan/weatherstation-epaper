@@ -8,27 +8,29 @@ import pirateweather
 from waveshare_epd import epd2in13bc
 from PIL import Image, ImageDraw, ImageFont
 
-# Display configuration
-FONT_SIZE_TEMPERATURE = 32
-FONT_SIZE_SUMMARY = 18
-MIN_FONT_SIZE_SUMMARY = 10
-ICON_SIZE = 40
-PADDING = 10
-
-# Timing
-UPDATE_INTERVAL_SECONDS = 1800  # 30 minutes
-
-# Paths
-FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-LOG_FILE = "/var/log/weatherstation.log"
-
-# Pirate Weather API configuration (from environment)
+# Configuration (from environment variables)
+# API
 API_KEY = os.environ.get("PIRATE_WEATHER_API_KEY")
 LATITUDE = float(os.environ.get("LATITUDE", "52.5200"))
 LONGITUDE = float(os.environ.get("LONGITUDE", "13.4050"))
 LANGUAGE = os.environ.get("LANGUAGE", "de")
-UNITS = os.environ.get("UNITS", "si")  # "si" for Celsius, "us" for Fahrenheit
+UNITS = os.environ.get("UNITS", "si")
 TEMP_SYMBOL = "°F" if UNITS == "us" else "°C"
+
+# Display
+FONT_SIZE_TEMPERATURE = int(os.environ.get("FONT_SIZE_TEMPERATURE", "32"))
+FONT_SIZE_SUMMARY = int(os.environ.get("FONT_SIZE_SUMMARY", "18"))
+MIN_FONT_SIZE_SUMMARY = int(os.environ.get("MIN_FONT_SIZE_SUMMARY", "10"))
+ICON_SIZE = int(os.environ.get("ICON_SIZE", "40"))
+PADDING = int(os.environ.get("PADDING", "10"))
+FLIP_DISPLAY = os.environ.get("FLIP_DISPLAY", "false").lower() == "true"
+
+# Timing
+UPDATE_INTERVAL_SECONDS = int(os.environ.get("UPDATE_INTERVAL_SECONDS", "1800"))
+
+# Paths
+FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
+LOG_FILE = os.environ.get("LOG_FILE", "/var/log/weatherstation.log")
 
 # Load icon mapping from file
 with open("icons.json", "r") as file:
@@ -178,9 +180,10 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         except (FileNotFoundError, IOError, OSError) as e:
             log_message(f"Error loading icon: {e}")
 
-        # Rotate image 90° clockwise
-        image_black = image_black.rotate(90, expand=True)
-        image_red = image_red.rotate(90, expand=True)
+        # Rotate image for display orientation
+        rotation = 270 if FLIP_DISPLAY else 90
+        image_black = image_black.rotate(rotation, expand=True)
+        image_red = image_red.rotate(rotation, expand=True)
 
         # Send images to display
         epd.display(epd.getbuffer(image_black), epd.getbuffer(image_red))
