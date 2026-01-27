@@ -2,6 +2,20 @@
 
 A Raspberry Pi weather station with a Waveshare 2.13" tri-color e-Paper display. Shows current temperature, daily max, and weather summary.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [What You Need](#what-you-need)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Troubleshooting](#troubleshooting)
+- [File Structure](#file-structure)
+- [Credits](#credits)
+- [License](#license)
+
+---
+
 ## Quick Start
 
 > **TL;DR** - Get it running in 4 steps:
