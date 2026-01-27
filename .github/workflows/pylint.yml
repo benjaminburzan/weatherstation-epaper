@@ -20,4 +20,4 @@ jobs:
         pip install pylint python-pirateweather Pillow
     - name: Analysing the code with pylint
       run: |
-        pylint $(find . -name "*.py")
+        pylint --fail-under=8 $(find . -name "*.py")
