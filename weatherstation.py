@@ -195,9 +195,12 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
             y_position = temp_height - PADDING + (i * line_height)
             draw_black.text((PADDING, y_position), line, font=font_summary, fill=0)
 
-        # Display weather icon using font
+        # Display weather icon using font (align with temperature baseline)
         icon_x = epd.height - PADDING - ICON_SIZE
-        draw_black.text((icon_x, PADDING), icon_char, font=font_icon, fill=0)
+        temp_ascent = font.getmetrics()[0]
+        icon_ascent = font_icon.getmetrics()[0]
+        icon_y = PADDING + (temp_ascent - icon_ascent) // 2
+        draw_black.text((icon_x, icon_y), icon_char, font=font_icon, fill=0)
 
         # Rotate image for display orientation
         rotation = 270 if FLIP_DISPLAY else 90
