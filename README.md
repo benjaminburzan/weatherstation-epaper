@@ -1,5 +1,10 @@
 # Weather Station e-Paper Display
 
+[![Python 3](https://img.shields.io/badge/Python-3-blue.svg)](https://www.python.org/)
+[![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-Compatible-c51a4a.svg)](https://www.raspberrypi.org/)
+[![Pirate Weather](https://img.shields.io/badge/Pirate%20Weather-API-purple.svg)](https://pirateweather.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 A Raspberry Pi weather station with a Waveshare 2.13" tri-color e-Paper display. Shows current temperature, daily max, and weather summary.
 
 ## Table of Contents
