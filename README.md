@@ -100,7 +100,7 @@ All settings are configured via environment variables in your `.env` file.
 | `FONT_SIZE_TEMPERATURE` | Temperature text size (pixels) | 32 |
 | `FONT_SIZE_SUMMARY` | Weather summary text size | 18 |
 | `MAX_SUMMARY_LINES` | Maximum lines for summary (wraps long text) | 2 |
-| `ICON_SIZE` | Weather icon size (pixels) | 40 |
+| `ICON_SIZE` | Weather icon size (pixels) | 48 |
 | `PADDING` | Screen edge padding (pixels) | 10 |
 
 ### Timing

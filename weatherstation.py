@@ -21,7 +21,7 @@ TEMP_SYMBOL = "°F" if UNITS == "us" else "°C"
 FONT_SIZE_TEMPERATURE = int(os.environ.get("FONT_SIZE_TEMPERATURE", "32"))
 FONT_SIZE_SUMMARY = int(os.environ.get("FONT_SIZE_SUMMARY", "18"))
 MAX_SUMMARY_LINES = int(os.environ.get("MAX_SUMMARY_LINES", "2"))
-ICON_SIZE = int(os.environ.get("ICON_SIZE", "40"))
+ICON_SIZE = int(os.environ.get("ICON_SIZE", "48"))
 PADDING = int(os.environ.get("PADDING", "10"))
 FLIP_DISPLAY = os.environ.get("FLIP_DISPLAY", "false").lower() == "true"
 
