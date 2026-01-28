@@ -57,10 +57,19 @@ sudo raspi-config
 ### 2. Install System Dependencies
 
 ```bash
-sudo apt install python3-pip python3-venv git fonts-dejavu
+sudo apt install python3-pip python3-venv pipx git fonts-dejavu
 ```
 
-### 3. Clone and Setup Weather Station
+### 3. Install Weather Station
+
+#### Option A: Quick Install with pipx (Recommended)
+
+```bash
+pipx install "git+https://github.com/benjaminburzan/weatherstation-epaper.git"
+pipx inject weatherstation-epaper "git+https://github.com/waveshareteam/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python"
+```
+
+#### Option B: Manual Setup with venv
 
 ```bash
 cd ~

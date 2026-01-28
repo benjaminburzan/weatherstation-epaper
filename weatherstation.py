@@ -2,9 +2,13 @@ import os
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 import json
 
 import pirateweather
+
+# Directory containing this script (for finding package data files)
+SCRIPT_DIR = Path(__file__).parent
 from waveshare_epd import epd2in13bc
 from PIL import Image, ImageDraw, ImageFont
 
@@ -30,11 +34,11 @@ UPDATE_INTERVAL_SECONDS = int(os.environ.get("UPDATE_INTERVAL_SECONDS", "1800"))
 
 # Paths
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
-ICON_FONT_PATH = os.environ.get("ICON_FONT_PATH", "weathericons.ttf")
+ICON_FONT_PATH = os.environ.get("ICON_FONT_PATH", str(SCRIPT_DIR / "weathericons.ttf"))
 LOG_FILE = os.environ.get("LOG_FILE", "/var/log/weatherstation.log")
 
 # Load icon mapping from file
-with open("icons.json", "r", encoding="utf-8") as file:
+with open(SCRIPT_DIR / "icons.json", "r", encoding="utf-8") as file:
     icon_mapping = json.load(file)
 
 
