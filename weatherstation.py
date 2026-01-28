@@ -30,6 +30,7 @@ UPDATE_INTERVAL_SECONDS = int(os.environ.get("UPDATE_INTERVAL_SECONDS", "1800"))
 
 # Paths
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
+ICON_FONT_PATH = os.environ.get("ICON_FONT_PATH", "weathericons.ttf")
 LOG_FILE = os.environ.get("LOG_FILE", "/var/log/weatherstation.log")
 
 # Load icon mapping from file
@@ -49,9 +50,8 @@ def log_message(message):
 
 
 def get_weather_icon(weather_icon):
-    """Returns the matching PNG filename or a default icon."""
-    icon_filename = icon_mapping.get(weather_icon, "wi-day-sunny.png")  # Fallback icon
-    return f"weather-icons/{icon_filename}"
+    """Returns the unicode character for the weather icon."""
+    return icon_mapping.get(weather_icon, "\uf00d")  # Fallback to sunny icon
 
 
 class WeatherStation:
@@ -81,15 +81,15 @@ class WeatherStation:
         while True:
             # Fetch weather data
             temperature, temperature_max, summary, weather_icon = get_weather()
-            png_icon_path = get_weather_icon(weather_icon)
+            icon_char = get_weather_icon(weather_icon)
 
             # Summary is already translated by the API via lang parameter
-            log_message(f"Weather data: {temperature}° / {temperature_max}°, {summary} Icon: {png_icon_path}")
+            log_message(f"Weather data: {temperature}° / {temperature_max}°, {summary} Icon: {weather_icon}")
 
             if temperature is not None and temperature_max is not None:
                 # Only update display if data has changed
                 if self.should_update_display(temperature, temperature_max, summary):
-                    display_weather(self.epd, temperature, temperature_max, summary, png_icon_path)
+                    display_weather(self.epd, temperature, temperature_max, summary, icon_char)
                 else:
                     log_message("No change in weather data, display not updated.")
             else:
@@ -153,7 +153,7 @@ def get_line_height(font):
     return ascent + descent + 2  # Add 2 pixels for line spacing
 
 
-def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
+def display_weather(epd, temperature, temperature_max, summary, icon_char):
     """Displays the weather on the e-Paper display."""
     log_message("Displaying weather on e-Paper display...")
 
@@ -172,6 +172,7 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
         # Load fonts
         font = ImageFont.truetype(FONT_PATH, FONT_SIZE_TEMPERATURE)
         font_summary = ImageFont.truetype(FONT_PATH, FONT_SIZE_SUMMARY)
+        font_icon = ImageFont.truetype(ICON_FONT_PATH, ICON_SIZE)
         available_width = epd.height - (2 * PADDING)  # epd.height is width in landscape
 
         # Calculate text position (60% of height for temperature area)
@@ -194,13 +195,9 @@ def display_weather(epd, temperature, temperature_max, summary, png_icon_path):
             y_position = temp_height - PADDING + (i * line_height)
             draw_black.text((PADDING, y_position), line, font=font_summary, fill=0)
 
-        # Display weather icon
-        try:
-            weather_icon_img = Image.open(png_icon_path).convert("1")  # Convert to black/white
-            weather_icon_img = weather_icon_img.resize((ICON_SIZE, ICON_SIZE))  # Scale
-            image_black.paste(weather_icon_img, (epd.height - PADDING - weather_icon_img.width, PADDING))  # Position (height because screen is rotated 90 degrees)
-        except (FileNotFoundError, IOError, OSError) as e:
-            log_message(f"Error loading icon: {e}")
+        # Display weather icon using font
+        icon_x = epd.height - PADDING - ICON_SIZE
+        draw_black.text((icon_x, PADDING), icon_char, font=font_icon, fill=0)
 
         # Rotate image for display orientation
         rotation = 270 if FLIP_DISPLAY else 90

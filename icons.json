@@ -1,14 +1,14 @@
 {
-  "clear-day": "wi-day-sunny.png",
-  "clear-night": "wi-day-sunny.png",
-  "rain": "wi-rain.png",
-  "snow": "wi-snow-wind.png",
-  "sleet": "wi-sleet.png",
-  "wind": "wi-strong-wind.png",
-  "fog": "wi-fog.png",
-  "cloudy": "wi-cloudy.png",
-  "partly-cloudy-day": "wi-day-cloudy.png",
-  "partly-cloudy-night": "wi-day-cloudy.png",
-  "thunderstorm": "wi-thunderstorm.png",
-  "hail": "wi-hail.png"
+  "clear-day": "\uf00d",
+  "clear-night": "\uf02e",
+  "rain": "\uf019",
+  "snow": "\uf01b",
+  "sleet": "\uf0b5",
+  "wind": "\uf050",
+  "fog": "\uf014",
+  "cloudy": "\uf013",
+  "partly-cloudy-day": "\uf002",
+  "partly-cloudy-night": "\uf086",
+  "thunderstorm": "\uf01e",
+  "hail": "\uf015"
 }

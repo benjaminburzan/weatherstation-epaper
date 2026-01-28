@@ -114,6 +114,7 @@ All settings are configured via environment variables in your `.env` file.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `FONT_PATH` | TrueType font file | `/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf` |
+| `ICON_FONT_PATH` | Weather icons font file | `weathericons.ttf` |
 | `LOG_FILE` | Log file location | `/var/log/weatherstation.log` |
 
 ---
@@ -189,8 +190,8 @@ weatherstation-epaper/
 ├── requirements.txt       # Python dependencies
 ├── .env                   # Your configuration (create from .env.example)
 ├── .env.example           # Configuration template
-├── icons.json             # Weather icon mapping
-├── weather-icons/         # PNG weather icons
+├── icons.json             # Weather icon unicode mapping
+├── weathericons.ttf       # Weather icons font
 └── venv/                  # Python virtual environment (created during setup)
 ```
 
