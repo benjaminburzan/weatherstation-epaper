@@ -22,7 +22,7 @@ Raspberry Pi weather station that displays current weather on a Waveshare 2.13" 
 .venv/bin/python -m pytest tests/ -v
 ```
 
-**Always run tests locally before committing.**
+**Always run tests locally before pushing.**
 
 Tests mock the hardware dependencies (`waveshare_epd`, `pirateweather`) since they require actual Raspberry Pi hardware.
 
