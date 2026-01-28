@@ -30,9 +30,9 @@ def test_icons_json_valid():
     assert "rain" in icons
 
 
-def test_weather_icons_directory_exists():
-    icons_dir = os.path.join(PROJECT_ROOT, "weather-icons")
-    assert os.path.isdir(icons_dir)
+def test_weather_icons_font_exists():
+    font_path = os.path.join(PROJECT_ROOT, "weathericons.ttf")
+    assert os.path.isfile(font_path)
 
 
 def test_env_example_exists():
