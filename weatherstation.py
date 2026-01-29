@@ -195,8 +195,10 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
         # Weather summary in lower area with text wrapping
         summary_lines = wrap_text(summary, font_summary, available_width, MAX_SUMMARY_LINES)
         line_height = get_line_height(font_summary)
+        log_message(f"DEBUG: summary_lines={summary_lines}, line_height={line_height}, available_width={available_width}")
         for i, line in enumerate(summary_lines):
             y_position = temp_height - PADDING + (i * line_height)
+            log_message(f"DEBUG: Drawing line {i+1}: '{line}' at y={y_position}")
             draw_black.text((PADDING, y_position), line, font=font_summary, fill=0)
 
         # Display weather icon using font (align with temperature baseline)
