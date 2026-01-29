@@ -13,30 +13,25 @@ from waveshare_epd import epd2in13bc
 from PIL import Image, ImageDraw, ImageFont
 
 # Configuration (from environment variables)
-# API
 API_KEY = os.environ.get("PIRATE_WEATHER_API_KEY")
 LATITUDE = float(os.environ.get("LATITUDE", "52.5200"))
 LONGITUDE = float(os.environ.get("LONGITUDE", "13.4050"))
 LANGUAGE = os.environ.get("LANGUAGE", "de")
 UNITS = os.environ.get("UNITS", "si")
 TEMP_SYMBOL = "°F" if UNITS == "us" else "°C"
-
-# Display
-FONT_SIZE_TEMPERATURE = int(os.environ.get("FONT_SIZE_TEMPERATURE", "32"))
-FONT_SIZE_SUMMARY_MAX = int(os.environ.get("FONT_SIZE_SUMMARY_MAX", "18"))
-FONT_SIZE_SUMMARY_MIN = int(os.environ.get("FONT_SIZE_SUMMARY_MIN", "12"))
-MAX_SUMMARY_LINES = int(os.environ.get("MAX_SUMMARY_LINES", "2"))
-ICON_SIZE = int(os.environ.get("ICON_SIZE", "48"))
-PADDING = int(os.environ.get("PADDING", "10"))
 FLIP_DISPLAY = os.environ.get("FLIP_DISPLAY", "false").lower() == "true"
-
-# Timing
 UPDATE_INTERVAL_SECONDS = int(os.environ.get("UPDATE_INTERVAL_SECONDS", "1800"))
 
-# Paths
+# Fixed display settings (optimized for 2.13" e-Paper)
+FONT_SIZE_TEMPERATURE = 32
+FONT_SIZE_SUMMARY_MAX = 18
+FONT_SIZE_SUMMARY_MIN = 12
+MAX_SUMMARY_LINES = 2
+ICON_SIZE = 48
+PADDING = 10
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
-ICON_FONT_PATH = os.environ.get("ICON_FONT_PATH", str(SCRIPT_DIR / "weathericons.ttf"))
-LOG_FILE = os.environ.get("LOG_FILE", "/var/log/weatherstation.log")
+ICON_FONT_PATH = str(SCRIPT_DIR / "weathericons.ttf")
+LOG_FILE = "/var/log/weatherstation.log"
 
 # Load icon mapping from file
 with open(SCRIPT_DIR / "icons.json", "r", encoding="utf-8") as file:

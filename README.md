@@ -96,8 +96,6 @@ At minimum, set your `PIRATE_WEATHER_API_KEY`. See [Configuration](#configuratio
 
 All settings are configured via environment variables in your `.env` file.
 
-### API Settings
-
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `PIRATE_WEATHER_API_KEY` | Your Pirate Weather API key | **Required** |
@@ -105,34 +103,9 @@ All settings are configured via environment variables in your `.env` file.
 | `LONGITUDE` | Your location's longitude | 13.4050 (Berlin) |
 | `LANGUAGE` | Weather summary language ([see options](https://pirateweather.net/en/latest/API/#language)) | de |
 | `UNITS` | `si` for Celsius, `us` for Fahrenheit | si |
-
-### Display Settings
-
-| Variable | Description | Default |
-|----------|-------------|---------|
 | `FLIP_DISPLAY` | Set to `true` to rotate display 180° | false |
-| `FONT_SIZE_TEMPERATURE` | Temperature text size (pixels) | 32 |
-| `FONT_SIZE_SUMMARY_MAX` | Maximum summary text size (auto-shrinks to fit) | 18 |
-| `FONT_SIZE_SUMMARY_MIN` | Minimum summary text size | 12 |
-| `MAX_SUMMARY_LINES` | Maximum lines for summary (wraps long text) | 2 |
-| `ICON_SIZE` | Weather icon size (pixels) | 48 |
-| `PADDING` | Screen edge padding (pixels) | 10 |
-
-The summary font size automatically adjusts to fit long text. It starts at `FONT_SIZE_SUMMARY_MAX` and shrinks down to `FONT_SIZE_SUMMARY_MIN` until all words fit within `MAX_SUMMARY_LINES`.
-
-### Timing
-
-| Variable | Description | Default |
-|----------|-------------|---------|
 | `UPDATE_INTERVAL_SECONDS` | How often to refresh (1800 = 30 min) | 1800 |
-
-### Paths
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FONT_PATH` | TrueType font file | `/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf` |
-| `ICON_FONT_PATH` | Weather icons font file | `weathericons.ttf` |
-| `LOG_FILE` | Log file location | `/var/log/weatherstation.log` |
+| `FONT_PATH` | TrueType font file | `/usr/share/fonts/.../DejaVuSans-Bold.ttf` |
 
 ---
 
