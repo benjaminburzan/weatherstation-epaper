@@ -112,10 +112,13 @@ All settings are configured via environment variables in your `.env` file.
 |----------|-------------|---------|
 | `FLIP_DISPLAY` | Set to `true` to rotate display 180° | false |
 | `FONT_SIZE_TEMPERATURE` | Temperature text size (pixels) | 32 |
-| `FONT_SIZE_SUMMARY` | Weather summary text size | 16 |
+| `FONT_SIZE_SUMMARY_MAX` | Maximum summary text size (auto-shrinks to fit) | 18 |
+| `FONT_SIZE_SUMMARY_MIN` | Minimum summary text size | 12 |
 | `MAX_SUMMARY_LINES` | Maximum lines for summary (wraps long text) | 2 |
 | `ICON_SIZE` | Weather icon size (pixels) | 48 |
 | `PADDING` | Screen edge padding (pixels) | 10 |
+
+The summary font size automatically adjusts to fit long text. It starts at `FONT_SIZE_SUMMARY_MAX` and shrinks down to `FONT_SIZE_SUMMARY_MIN` until all words fit within `MAX_SUMMARY_LINES`.
 
 ### Timing
 

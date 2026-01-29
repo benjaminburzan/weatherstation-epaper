@@ -9,7 +9,7 @@ sys.modules['waveshare_epd'] = MagicMock()
 sys.modules['waveshare_epd.epd2in13bc'] = MagicMock()
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from weatherstation import wrap_text, get_line_height
+from weatherstation import wrap_text, get_line_height, fit_summary_to_lines
 
 # Get the project root directory
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,3 +96,58 @@ def test_get_line_height():
     result = get_line_height(mock_font)
 
     assert result == 20  # 14 + 4 + 2 (spacing)
+
+
+@patch('weatherstation.ImageFont.truetype')
+def test_fit_summary_short_text_uses_max_size(mock_truetype):
+    """Test that short text uses the maximum font size."""
+    mock_font = MagicMock()
+    mock_font.getlength.return_value = 50  # Text fits easily
+    mock_truetype.return_value = mock_font
+
+    font, lines = fit_summary_to_lines("Short", "/fake/path.ttf", max_width=200, max_lines=2, max_size=18, min_size=12)
+
+    # Should use max size (18) on first try
+    mock_truetype.assert_called_with("/fake/path.ttf", 18)
+    assert lines == ["Short"]
+
+
+@patch('weatherstation.ImageFont.truetype')
+def test_fit_summary_long_text_reduces_font_size(mock_truetype):
+    """Test that long text triggers font size reduction."""
+    call_count = [0]
+
+    def mock_font_factory(path, size):
+        call_count[0] += 1
+        mock_font = MagicMock()
+        # At size 18 and 17: text doesn't fit (each word ~60px, 3 words = 180px > 150px width)
+        # At size 16: text fits on 2 lines
+        if size >= 17:
+            mock_font.getlength.side_effect = lambda text: len(text.split()) * 60
+        else:
+            mock_font.getlength.side_effect = lambda text: len(text.split()) * 40
+        return mock_font
+
+    mock_truetype.side_effect = mock_font_factory
+
+    font, lines = fit_summary_to_lines("One two three", "/fake/path.ttf", max_width=100, max_lines=2, max_size=18, min_size=12)
+
+    # Should have tried sizes 18, 17, then succeeded at 16
+    assert call_count[0] == 3
+    assert mock_truetype.call_args_list[-1][0] == ("/fake/path.ttf", 16)
+
+
+@patch('weatherstation.ImageFont.truetype')
+def test_fit_summary_respects_minimum_size(mock_truetype):
+    """Test that minimum size is respected even if text doesn't fit."""
+    mock_font = MagicMock()
+    # Text never fits - each word is 200px, way over max_width
+    mock_font.getlength.side_effect = lambda text: len(text.split()) * 200
+    mock_truetype.return_value = mock_font
+
+    font, lines = fit_summary_to_lines("Very long text here", "/fake/path.ttf", max_width=100, max_lines=2, max_size=18, min_size=12)
+
+    # Should end at minimum size (12)
+    # Called for sizes 18, 17, 16, 15, 14, 13, 12, then final call at 12
+    final_call = mock_truetype.call_args_list[-1]
+    assert final_call[0] == ("/fake/path.ttf", 12)

@@ -23,7 +23,8 @@ TEMP_SYMBOL = "°F" if UNITS == "us" else "°C"
 
 # Display
 FONT_SIZE_TEMPERATURE = int(os.environ.get("FONT_SIZE_TEMPERATURE", "32"))
-FONT_SIZE_SUMMARY = int(os.environ.get("FONT_SIZE_SUMMARY", "16"))
+FONT_SIZE_SUMMARY_MAX = int(os.environ.get("FONT_SIZE_SUMMARY_MAX", "18"))
+FONT_SIZE_SUMMARY_MIN = int(os.environ.get("FONT_SIZE_SUMMARY_MIN", "12"))
 MAX_SUMMARY_LINES = int(os.environ.get("MAX_SUMMARY_LINES", "2"))
 ICON_SIZE = int(os.environ.get("ICON_SIZE", "48"))
 PADDING = int(os.environ.get("PADDING", "10"))
@@ -157,6 +158,27 @@ def get_line_height(font):
     return ascent + descent + 2  # Add 2 pixels for line spacing
 
 
+def fit_summary_to_lines(text, font_path, max_width, max_lines, max_size, min_size):
+    """Find the largest font size that fits text within max_lines.
+
+    Returns (font, lines) tuple.
+    """
+    words = text.split()
+
+    for size in range(max_size, min_size - 1, -1):
+        font = ImageFont.truetype(font_path, size)
+        lines = wrap_text(text, font, max_width, max_lines)
+
+        # Check if all words fit (no truncation)
+        words_in_lines = sum(len(line.split()) for line in lines)
+        if words_in_lines >= len(words):
+            return font, lines
+
+    # At minimum size, return whatever fits
+    font = ImageFont.truetype(font_path, min_size)
+    return font, wrap_text(text, font, max_width, max_lines)
+
+
 def display_weather(epd, temperature, temperature_max, summary, icon_char):
     """Displays the weather on the e-Paper display."""
     log_message("Displaying weather on e-Paper display...")
@@ -175,9 +197,12 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
 
         # Load fonts
         font = ImageFont.truetype(FONT_PATH, FONT_SIZE_TEMPERATURE)
-        font_summary = ImageFont.truetype(FONT_PATH, FONT_SIZE_SUMMARY)
-        font_icon = ImageFont.truetype(ICON_FONT_PATH, ICON_SIZE)
         available_width = epd.height - (2 * PADDING)  # epd.height is width in landscape
+        font_summary, summary_lines = fit_summary_to_lines(
+            summary, FONT_PATH, available_width, MAX_SUMMARY_LINES,
+            FONT_SIZE_SUMMARY_MAX, FONT_SIZE_SUMMARY_MIN
+        )
+        font_icon = ImageFont.truetype(ICON_FONT_PATH, ICON_SIZE)
 
         # Calculate text position (55% of height for temperature area)
         temp_height = int(epd.width * 0.55)
@@ -193,10 +218,9 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
                 draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}{TEMP_SYMBOL}", font=font, fill=0)  # Black with " / " with spaces
 
         # Weather summary in lower area with text wrapping
-        summary_lines = wrap_text(summary, font_summary, available_width, MAX_SUMMARY_LINES)
         line_height = get_line_height(font_summary)
         for i, line in enumerate(summary_lines):
-            y_position = temp_height - PADDING + (i * line_height)
+            y_position = temp_height + (i * line_height)
             draw_black.text((PADDING, y_position), line, font=font_summary, fill=0)
 
         # Display weather icon using font (align with temperature baseline)
