@@ -196,7 +196,6 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
             summary, FONT_PATH, available_width, MAX_SUMMARY_LINES,
             FONT_SIZE_SUMMARY_MAX, FONT_SIZE_SUMMARY_MIN
         )
-        font_icon = ImageFont.truetype(ICON_FONT_PATH, ICON_SIZE)
 
         # Calculate text position (55% of height for temperature area)
         temp_height = int(epd.width * 0.55)
@@ -234,9 +233,16 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
             y_position = temp_height + (i * line_height)
             draw_black.text((PADDING, y_position), line, font=font_summary, fill=0)
 
-        # Display weather icon using font (align with temperature baseline)
-        # Extra -10 to compensate for font's built-in right spacing
-        icon_x = epd.height - PADDING - ICON_SIZE - 10
+        # Calculate available width for icon based on actual temp text width
+        temp_text_width = temp_font.getlength(temp_text)
+        gap = 5  # Minimum gap between temp and icon
+        available_icon_width = epd.height - PADDING - temp_text_width - gap - PADDING
+        ICON_SIZE_MIN = 32
+        icon_size = max(ICON_SIZE_MIN, min(ICON_SIZE, int(available_icon_width)))
+        font_icon = ImageFont.truetype(ICON_FONT_PATH, icon_size)
+
+        # Display weather icon (align with temperature baseline)
+        icon_x = epd.height - PADDING - icon_size - 10
         temp_ascent = temp_font.getmetrics()[0]
         icon_ascent = font_icon.getmetrics()[0]
         icon_y = PADDING + (temp_ascent - icon_ascent) // 2
