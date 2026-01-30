@@ -26,7 +26,7 @@ UPDATE_INTERVAL_SECONDS = int(os.environ.get("UPDATE_INTERVAL_SECONDS", "1800"))
 FONT_SIZE_TEMPERATURE = 32
 FONT_SIZE_SUMMARY_MAX = 18
 FONT_SIZE_SUMMARY_MIN = 12
-MAX_SUMMARY_LINES = 2
+MAX_SUMMARY_LINES = 3
 ICON_SIZE = 48
 PADDING = 10
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
@@ -171,7 +171,14 @@ def fit_summary_to_lines(text, font_path, max_width, max_lines, max_size, min_si
 
     # At minimum size, return whatever fits
     font = ImageFont.truetype(font_path, min_size)
-    return font, wrap_text(text, font, max_width, max_lines)
+    lines = wrap_text(text, font, max_width, max_lines)
+
+    # Check if text was truncated and log error
+    words_in_lines = sum(len(line.split()) for line in lines)
+    if words_in_lines < len(words):
+        log_message(f"ERROR: Summary text truncated! Original: '{text}' ({len(words)} words) - Only fit: {words_in_lines} words at {min_size}px font with {max_lines} lines")
+
+    return font, lines
 
 
 def display_weather(epd, temperature, temperature_max, summary, icon_char):

@@ -137,8 +137,9 @@ def test_fit_summary_long_text_reduces_font_size(mock_truetype):
     assert mock_truetype.call_args_list[-1][0] == ("/fake/path.ttf", 16)
 
 
+@patch('weatherstation.log_message')
 @patch('weatherstation.ImageFont.truetype')
-def test_fit_summary_respects_minimum_size(mock_truetype):
+def test_fit_summary_respects_minimum_size(mock_truetype, mock_log):
     """Test that minimum size is respected even if text doesn't fit."""
     mock_font = MagicMock()
     # Text never fits - each word is 200px, way over max_width
@@ -151,3 +152,6 @@ def test_fit_summary_respects_minimum_size(mock_truetype):
     # Called for sizes 18, 17, 16, 15, 14, 13, 12, then final call at 12
     final_call = mock_truetype.call_args_list[-1]
     assert final_call[0] == ("/fake/path.ttf", 12)
+
+    # Should log error about truncation
+    assert mock_log.called

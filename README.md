@@ -138,6 +138,7 @@ sudo systemctl status weatherstation
 **View logs:**
 ```bash
 tail -f /var/log/weatherstation.log
+# Includes errors like summary text truncation
 ```
 
 ---
