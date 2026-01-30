@@ -191,7 +191,6 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
         draw_red = ImageDraw.Draw(image_red)
 
         # Load fonts
-        font = ImageFont.truetype(FONT_PATH, FONT_SIZE_TEMPERATURE)
         available_width = epd.height - (2 * PADDING)  # epd.height is width in landscape
         font_summary, summary_lines = fit_summary_to_lines(
             summary, FONT_PATH, available_width, MAX_SUMMARY_LINES,
@@ -202,15 +201,32 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
         # Calculate text position (55% of height for temperature area)
         temp_height = int(epd.width * 0.55)
 
-        # If temperature >= max temperature, display in RED
+        # Calculate available width for temperature text
+        # Reserve space for icon: ICON_SIZE + PADDING + extra offset (10) + gap (5)
+        icon_reserved_width = ICON_SIZE + PADDING + 10 + 5
+        max_temp_width = epd.height - PADDING - icon_reserved_width
+
+        # Build temperature string
         if temperature >= temperature_max:
-            draw_red.text((PADDING, PADDING), f"{temperature}{TEMP_SYMBOL}", font=font, fill=0)  # Red
+            temp_text = f"{temperature}{TEMP_SYMBOL}"
         else:
-            # Check if either number is double-digit
             if temperature >= 10 or temperature_max >= 10:
-                draw_black.text((PADDING, PADDING), f"{temperature}°/{temperature_max}{TEMP_SYMBOL}", font=font, fill=0)  # Black with "/" no spaces
+                temp_text = f"{temperature}°/{temperature_max}{TEMP_SYMBOL}"
             else:
-                draw_black.text((PADDING, PADDING), f"{temperature}° / {temperature_max}{TEMP_SYMBOL}", font=font, fill=0)  # Black with " / " with spaces
+                temp_text = f"{temperature}° / {temperature_max}{TEMP_SYMBOL}"
+
+        # Find font size that fits within available width
+        temp_font_size = FONT_SIZE_TEMPERATURE
+        temp_font = ImageFont.truetype(FONT_PATH, temp_font_size)
+        while temp_font.getlength(temp_text) > max_temp_width and temp_font_size > 20:
+            temp_font_size -= 1
+            temp_font = ImageFont.truetype(FONT_PATH, temp_font_size)
+
+        # Draw temperature with fitted font
+        if temperature >= temperature_max:
+            draw_red.text((PADDING, PADDING), temp_text, font=temp_font, fill=0)  # Red
+        else:
+            draw_black.text((PADDING, PADDING), temp_text, font=temp_font, fill=0)  # Black
 
         # Weather summary in lower area with text wrapping
         line_height = get_line_height(font_summary)
@@ -221,7 +237,7 @@ def display_weather(epd, temperature, temperature_max, summary, icon_char):
         # Display weather icon using font (align with temperature baseline)
         # Extra -10 to compensate for font's built-in right spacing
         icon_x = epd.height - PADDING - ICON_SIZE - 10
-        temp_ascent = font.getmetrics()[0]
+        temp_ascent = temp_font.getmetrics()[0]
         icon_ascent = font_icon.getmetrics()[0]
         icon_y = PADDING + (temp_ascent - icon_ascent) // 2
         draw_black.text((icon_x, icon_y), icon_char, font=font_icon, fill=0)
